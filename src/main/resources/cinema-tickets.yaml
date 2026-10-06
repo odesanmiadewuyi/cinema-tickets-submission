@@ -1,0 +1,137 @@
+openapi: 3.1.1
+
+info:
+  title: Cinema Tickets Service
+  description: Cinema Tickets Service
+  version: 0.0.2
+
+license:
+  name: MIT License
+  identifier: MIT
+  url: https://opensource.org/license/mit
+
+tags:
+  - name: bookings
+    description: Endpoints related to cinema ticket bookings
+
+paths:
+  /cinema/bookings:
+    post:
+      tags:
+        - bookings
+      summary: Make a cinema ticket booking.
+      description: Make a cinema ticket booking.
+      operationId: bookingCreate
+      requestBody:
+        description: Make a booking for the specified account and seats.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Booking"
+        required: true
+      responses:
+        "201":
+          description: Successful booking.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingConfirmation"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      description: Problem Detail - RFC 9457 Schema
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: URI reference identifying the problem type.
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        status:
+          type: integer
+          description: HTTP status code for this error occurrence.
+        detail:
+          type: string
+          description: Explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          format: uri-reference
+          description: URI reference identifying the specific occurrence of the problem.
+
+    TicketType:
+      type: string
+      description: Ticket Type
+      examples: [ADULT]
+      enum:
+        - ADULT
+        - CHILD
+        - INFANT
+
+    TicketRequest:
+      type: object
+      description: Ticket Request, seat counts and types
+      properties:
+        type:
+          $ref: "#/components/schemas/TicketType"
+        count:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: false
+          examples: [0, 1, 2]
+
+    Booking:
+      type: object
+      description: A ticket booking for a specified account and seat counts and types
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          minimum: 1
+          nullable: false
+          examples: [1234, 6789]
+        tickets:
+          type: array
+          nullable: false
+          items:
+            $ref: "#/components/schemas/TicketRequest"
+      required:
+        - accountId
+        - tickets
+
+    BookingConfirmation:
+      type: object
+      description: A ticket booking confirmation.
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          minimum: 1
+          nullable: false
+          examples: [1234, 6789]
+        seatCount:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 25
+          nullable: false
+          examples: [1, 25]
+        totalCost:
+          type: number
+          format: double
+          minimum: 1
+          nullable: false
+          examples: [25.99, 51.98]
+      required:
+        - accountId
+        - seatCount
+        - totalCost
